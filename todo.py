@@ -13,18 +13,20 @@ def main():
     parser.add_argument("--remove")
 
     parser.add_argument("--clear", action="store_true")
-    
+
+    parser.add_argument("--complete")
+
     args = parser.parse_args() #cli'dan yazdığımız veriyi string olarak dönecek
     
                     
     if args.add: #cli'a düzgün bir veri yazıldıysa
-        tasks.append(args.add) #json'daki list'eye cli'dan yazdığımız veriyi ekleyecek
+        tasks.append({"task": args.add, "completed": False}) #json'daki list'eye cli'dan yazdığımız veriyi ekleyecek
         with open(path, "w") as w: # güncellediğimiz listeyi json.dump() sayesinde json dosyasına yeniden yazacak
             json.dump(tasks, w)
         print(f"Görev eklendi: {args.add}")
     elif args.list: 
         for i, item in enumerate(tasks, 1):
-            print(f"{i}. {item}")
+            print(f"{i}. {item['task']}")
     elif args.remove:
         try:
             myIndex = int(args.remove) - 1
@@ -39,13 +41,28 @@ def main():
         del tasks[myIndex]
         with open(path, "w") as w:
             json.dump(tasks, w)
-        print(f"Görev başarıyla silindi: {deleted_task}")
+        print(f"Görev başarıyla silindi: {deleted_task['task']}")
     
     elif args.clear:
         tasks.clear()
         with open(path, "w") as w:
             json.dump(tasks, w)
         print("Görev listesi başarıyla temizlendi.")
+    
+    elif args.complete:
+        try:
+            myIndex = int(args.complete) - 1
+            if myIndex < 0 or myIndex >= len(tasks):
+                raise IndexError
+        except ValueError:
+            raise Exception("Lütfen geçerli bir sayı giriniz.")
+        except IndexError:
+            raise Exception("Bu sıraya karşılık gelen bir görev bulunmadı")
+
+        tasks[myIndex]["completed"] = True
+        with open(path, "w") as w:
+            json.dump(tasks, w)
+        print(f"Görev: {tasks[myIndex]['task']} ... Tamamlandı.")
         
 
     else:
