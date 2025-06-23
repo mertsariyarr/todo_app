@@ -1,4 +1,5 @@
 import argparse
+import sys
 import json
 def main():
     path = "/home/mert/workspace/github.com/mertsariyarr/todo_app/tasks.json"
@@ -16,6 +17,8 @@ def main():
 
     parser.add_argument("--complete")
 
+    parser.add_argument("--uncomplete")
+
     args = parser.parse_args() #cli'dan yazdığımız veriyi string olarak dönecek
     
                     
@@ -24,24 +27,34 @@ def main():
         with open(path, "w") as w: # güncellediğimiz listeyi json.dump() sayesinde json dosyasına yeniden yazacak
             json.dump(tasks, w)
         print(f"Görev eklendi: {args.add}")
+
+
     elif args.list: 
+        if len(tasks) == 0:
+            print("Todo listenizde şu anda görev bulunmamakta.")
         for i, item in enumerate(tasks, 1):
-            print(f"{i}. {item['task']}")
+            print(f"{i}. {is_completed(item)} {item['task']}")
+
+
+
     elif args.remove:
         try:
             myIndex = int(args.remove) - 1
             if myIndex < 0 or myIndex >= len(tasks):
                 raise IndexError
         except ValueError:
-            raise Exception("Lütfen geçerli bir sayı giriniz.")
+            print("Lütfen geçerli bir sayı giriniz")
+            sys.exit(1)
         except IndexError:
-            raise Exception("Bu sıraya karşılık gelen bir görev bulunamadı.")
+            print("Bu sıraya karşılık gelen bir görev bulunamadı.")
+            sys.exit(1)
         
         deleted_task = tasks[myIndex]
         del tasks[myIndex]
         with open(path, "w") as w:
             json.dump(tasks, w)
         print(f"Görev başarıyla silindi: {deleted_task['task']}")
+        
     
     elif args.clear:
         tasks.clear()
@@ -55,16 +68,38 @@ def main():
             if myIndex < 0 or myIndex >= len(tasks):
                 raise IndexError
         except ValueError:
-            raise Exception("Lütfen geçerli bir sayı giriniz.")
+            print("Lütfen geçerli bir sayı giriniz")
+            sys.exit(1)
         except IndexError:
-            raise Exception("Bu sıraya karşılık gelen bir görev bulunmadı")
+            print("Bu sıraya karşılık gelen bir görev bulunamadı.")
+            sys.exit(1)
 
         tasks[myIndex]["completed"] = True
         with open(path, "w") as w:
             json.dump(tasks, w)
         print(f"Görev: {tasks[myIndex]['task']} ... Tamamlandı.")
         
-
+    elif args.uncomplete:
+        try:
+            myIndex = int(args.uncomplete) - 1
+            if myIndex < 0 or myIndex >= len(tasks):
+                raise IndexError
+        except ValueError:
+            print("Lütfen geçerli bir sayı giriniz")
+            sys.exit(1)
+        except IndexError:
+            print("Bu sıraya karşılık gelen bir görev bulunamadı.")
+            sys.exit(1)
+        
+        if tasks[myIndex]["completed"] == True:
+            tasks[myIndex]["completed"] = False
+            with open(path, "w") as w:
+                json.dump(tasks, w)
+            print(f"Görev {tasks[myIndex]['task']} ...Tamamlanmamış olarak güncellendi.")
+        else:
+            print("Görev zaten halihazırda tamamlanmamış")
+            sys.exit(1)
+        
     else:
         print("Hiçbir görev eklenemedi.")
     
@@ -80,4 +115,8 @@ def read_tasks(path):
     except:
         return []
 
+def is_completed(item):
+    if item["completed"]:
+        return "[x]"
+    return "[ ]"
 main()
