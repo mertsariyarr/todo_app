@@ -10,7 +10,10 @@ def main():
     
     parser.add_argument("--list", action="store_true") #cli'a list flag'ı ekledik jsondan veriyi listeleyeceğiz.
     
+    parser.add_argument("--remove")
 
+    parser.add_argument("--clear", action="store_true")
+    
     args = parser.parse_args() #cli'dan yazdığımız veriyi string olarak dönecek
     
                     
@@ -22,6 +25,29 @@ def main():
     elif args.list: 
         for i, item in enumerate(tasks, 1):
             print(f"{i}. {item}")
+    elif args.remove:
+        try:
+            myIndex = int(args.remove) - 1
+            if myIndex < 0 or myIndex >= len(tasks):
+                raise IndexError
+        except ValueError:
+            raise Exception("Lütfen geçerli bir sayı giriniz.")
+        except IndexError:
+            raise Exception("Bu sıraya karşılık gelen bir görev bulunamadı.")
+        
+        deleted_task = tasks[myIndex]
+        del tasks[myIndex]
+        with open(path, "w") as w:
+            json.dump(tasks, w)
+        print(f"Görev başarıyla silindi: {deleted_task}")
+    
+    elif args.clear:
+        tasks.clear()
+        with open(path, "w") as w:
+            json.dump(tasks, w)
+        print("Görev listesi başarıyla temizlendi.")
+        
+
     else:
         print("Hiçbir görev eklenemedi.")
     
